@@ -18,16 +18,16 @@ export default class Chat extends React.Component {
     componentDidMount() {
         this.socket = io('localhost:3000');
 
-        //to GET all the messages from server, not working yet
+        //to GET all the messages from server - not working yet
         this.socket.on('messgages', data => {
-            console.log('GOT DATA', data);
+            console.log('REACT, GOT DATA', data);
             this.setState({ messages: data });
         });
 
-        //to GET the sended new_message, not working yet
+        //to GET the sended new_message - working
         this.socket.on('new_message', data => {
-            console.log('GOT NEW MSG', data); //got: Object: content, id, username
-            this.setState({ messages: [...this.state.messages, data] });
+           console.log('REACT, GOT NEW MSG', data); //got: Object: content, id, username
+           this.setState({ messages: [...this.state.messages, data] });
         });
     }
 
