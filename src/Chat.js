@@ -60,7 +60,7 @@ export default class Chat extends React.Component {
     render() {
         return (
             <div className='chat-page'>
-                <h2>Chat</h2>
+                <h2>Hello {this.props.name}, welcome to Chat</h2>
                 <button onClick={this.toLogOut}
                     className='logout-button'>Log Out</button>
 
@@ -72,14 +72,15 @@ export default class Chat extends React.Component {
                 ))}
 
                 <form onSubmit={this.sendMessage}>
-                    <textarea
+                    <textarea 
+                        /*onKeyPress={event => event.key === 'Enter' ? this.sendMessage() : null} */
                         onChange={this.onChange}
                         value={this.state.clientMessage}
                         rows='4' cols='28'
                         placeholder='Type in Your Message Here'>
                     </textarea>
 
-                    <button
+                    <button onClick={this.sendMessage}
                         className='send-button'>Send
                      </button>
                 </form>
