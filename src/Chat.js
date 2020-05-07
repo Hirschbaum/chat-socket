@@ -2,8 +2,6 @@ import React from 'react';
 import io from 'socket.io-client';
 import axios from 'axios';
 
-//const socket = io('localhost:3000');
-
 export default class Chat extends React.Component {
     constructor(props) {
         super(props);
@@ -23,7 +21,7 @@ export default class Chat extends React.Component {
     componentDidMount() {
         this.socket = io('localhost:3000');
 
-        //to GET all the messages from server - not working yet
+        //to GET all the messages from server - working
         this.socket.on('messages', data => {
             console.log('REACT, GOT DATA', data);
             this.setState({ messages: data });
@@ -32,6 +30,7 @@ export default class Chat extends React.Component {
         //to GET the sended new_message - working
         this.socket.on('new_message', data => {
             console.log('REACT, GOT NEW MSG', data); //got: Object: content, id, username
+            //send it to the channels ID, which is on server side...
             this.setState({ messages: [...this.state.messages, data] });
         });
 
@@ -47,7 +46,7 @@ export default class Chat extends React.Component {
 
     handleNewChannel = (e) => {
         e.preventDefault();
-        axios.post('/', {channelName: this.state.channelName})//or should it be the same object like on the backend side?
+        axios.post('/', {channelName: this.state.channelName})//working
             .then(res => {
                 console.log('RESPONSE POSTING CHANNEL', res);
                 this.setState({channels: [...this.state.channels, this.state.channelName]});
@@ -78,6 +77,8 @@ export default class Chat extends React.Component {
 
     render() {
         console.log('CHANNEL', this.state.channelName);
+        console.log('CHANNELS', this.state.channels);
+
         return (
             <div style={{ width: '100vw', position: "relative" }}>
                 
