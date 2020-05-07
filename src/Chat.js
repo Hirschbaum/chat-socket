@@ -1,5 +1,6 @@
 import React from 'react';
 import io from 'socket.io-client';
+import axios from 'axios';
 
 //const socket = io('localhost:3000');
 
@@ -8,7 +9,7 @@ export default class Chat extends React.Component {
         super(props);
 
         this.state = {
-            channel: '',
+            channelName: '',
             channels: [],
             messages: [],
             clientMessage: '',
@@ -33,15 +34,24 @@ export default class Chat extends React.Component {
             console.log('REACT, GOT NEW MSG', data); //got: Object: content, id, username
             this.setState({ messages: [...this.state.messages, data] });
         });
+
     }
 
     componentWillUnmount() {
         this.socket.off() //if it is empty, then it takes away all the eventlisteners
     }
 
-    handleChannel = (e) => {
-        let channel = e.target.value;
-        this.setState({channels: this.state.channels, channel});
+    getChannelName = (e) => {
+        this.setState({channelName: e.target.value});
+    }
+
+    handleNewChannel = (e) => {
+        e.preventDefault();
+        axios.post('/', {channelName: this.state.channelName})//or should it be the same object like on the backend side?
+            .then(res => {
+                console.log('RESPONSE POSTING CHANNEL', res);
+                this.setState({channels: [...this.state.channels, this.state.channelName]});
+            })
     }
 
     onChange = (e) => {
@@ -67,22 +77,36 @@ export default class Chat extends React.Component {
     }
 
     render() {
+        console.log('CHANNEL', this.state.channelName);
         return (
-            <div style={{width: '100vw', position: "relative"}}>
-                <aside style={{width: '30vw', display: 'flex', flexDirection: 'column', margin: '1%'}}>
-                    <label htmlFor="channel" >Create a new channel here</label>
-                    <input type="text" name="channel" id="channel" style={{width: '150px'}}/>
-                    <input type="submit" value="Create" style={{width: '70px'}}/>
-                    
+            <div style={{ width: '100vw', position: "relative" }}>
+                
+                <aside style={{ width: '30vw', display: 'flex', flexDirection: 'column', margin: '1%' }}>
+                   {/* <form action="" method="post">*/}
+                        <label htmlFor="channel" >Create a new channel here</label>
+                        <input
+                            type="text"
+                            onChange={this.getChannelName}
+                            value={this.state.channelName}
+                            name="channelName" id="channelName"
+                            style={{ width: '150px' }} />
+                        <input
+                            type="submit"
+                            onClick={this.handleNewChannel}
+                            value="Create"
+                            style={{ width: '70px' }} />
+                    {/*</form>*/}
+
                     <h3>Channels</h3>
                     <ul>
                         {this.state.channels.map(channel => (
-                            <li key={channel}>{channel}</li>
+                            <li key={channel.id}>{channel}</li>
                         ))}
                     </ul>
                 </aside>
-                <section style={{width: '55vw', position: 'absolute', left: '300px'}}>
-                    <h2>Hello {this.props.name}, welcome to Chat</h2>
+
+                <section style={{ width: '55vw', position: 'absolute', left: '300px' }}>
+                    <h3>Hello {this.props.name}, welcome to Chat Channels</h3>
                     <button onClick={this.toLogOut}
                         className='logout-button'>Log Out</button>
 
@@ -104,7 +128,7 @@ export default class Chat extends React.Component {
 
                         <button onClick={this.sendMessage}
                             className='send-button'>Send
-                     </button>
+                        </button>
                     </form>
                 </section>
             </div>
