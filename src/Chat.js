@@ -7,13 +7,14 @@ export default class Chat extends React.Component {
         super(props);
 
         this.state = {
-            chatData: [],
 
+            channelMessages: [],
             channelName: '',
             channels: [],
             clientMessage: '',
             loggedIn: false,
             messages: [], //channels from json file
+            chatData: [], //not working wit GET, GET messages via socket, see above
         };
 
         this.socket = null;
@@ -22,7 +23,7 @@ export default class Chat extends React.Component {
     componentDidMount() {
         this.socket = io('localhost:3000');
 
-        //to GET all the messages from server - ?! to a sepecific channel
+        //to GET all the messages from server - ?! to a specific channel
         this.socket.on('messages', data => {
             console.log('REACT, GOT DATA', data);
             this.setState({ messages: data }); //here comes the channels!
@@ -35,7 +36,7 @@ export default class Chat extends React.Component {
             this.setState({ messages: [...this.state.messages, data] });
         });
 
-        /*to GET all the chatdata from the server
+        /*to GET all the chatdata from the server, data comes through SOCKET!
         axios.get('/')
             .then(response => {
                 this.setState({ chatData: response.data });
@@ -52,6 +53,18 @@ export default class Chat extends React.Component {
 
     getChannelName = (e) => {
         this.setState({ channelName: e.target.value });
+    }
+
+    handleChannelRoute = (e, id) => {
+        //e.preventDefault();
+        axios.get('/' + id)
+            .then(response => {
+                console.log('Channel onclick ', response);
+                this.setState({ channelMessages: response.data.channelMessages })
+            })
+            .catch(err => {
+                console.log('Error by handeling channelMessages', err);
+            })
     }
 
     handleNewChannel = (e) => {
@@ -74,11 +87,12 @@ export default class Chat extends React.Component {
             return (
                 <li
                     key={id}
-                    //onClick={this.handleChannelRoute}
-                    //channelMessages={channelMessages}
-                    >
+                    id={id}
+                    onClick={(e, id) =>{ this.handleChannelRoute(e, channel.id) }}
+                //channelMessages={channelMessages}
+                >
                     {channelName}
-                </li> 
+                </li>
             )
         })
     }
@@ -125,7 +139,7 @@ export default class Chat extends React.Component {
 
                     <h3>Channels</h3>
                     <ul>
-                       {this.renderChannels()}
+                        {this.renderChannels()}
                     </ul>
                 </aside>
 
@@ -134,14 +148,13 @@ export default class Chat extends React.Component {
                     <button onClick={this.toLogOut}
                         className='logout-button'>Log Out</button>
 
-                    {/* logic, to go to specific ID - 1. axios.get:id
-                    {this.state.messages.map(x => (
+                    {this.state.channelMessages.map(x => (
                         <div key={x.id} className='chat-messages'>
-                            <span className='chat-users'><b>{x.username} </b></span>
+                            <span className='chat-users' id={x.id}><b>{x.username} </b></span>
                             <span className='chat-text'> {x.content}</span>
                         </div>
                     ))}
-                    */}
+
 
                     <form type='submit' onSubmit={this.sendMessage}>
                         <textarea
