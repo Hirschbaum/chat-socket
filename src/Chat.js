@@ -29,11 +29,12 @@ export default class Chat extends React.Component {
             this.setState({ messages: data }); //here comes the channels!
         });
 
-        //to GET the sended new_message - working - ?! to a specific channel
+        //to GET the sended new_message - working - ?! how to send to a specific channel
+        //-----------------------TO FIX THIS-------------------------
         this.socket.on('new_message', data => {
             console.log('REACT, GOT NEW MSG', data); //got: Object: content, id, username
             //send it to the channels ID, which is on server side...
-            this.setState({ messages: [...this.state.messages, data] });
+            this.setState({ channelMessages: [...this.state.channelMessages, data] });
         });
 
         /*to GET all the chatdata from the server, data comes through SOCKET!
@@ -44,7 +45,8 @@ export default class Chat extends React.Component {
             })
             .catch(err => {
                 console.log('Error by reciving all the chat data from server', err);
-            });*/
+            });
+            */
     }
 
     componentWillUnmount() {
@@ -88,7 +90,7 @@ export default class Chat extends React.Component {
                 <li
                     key={id}
                     id={id}
-                    onClick={(e, id) =>{ this.handleChannelRoute(e, channel.id) }}
+                    onClick={(e, id) => { this.handleChannelRoute(e, channel.id) }}
                 //channelMessages={channelMessages}
                 >
                     {channelName}
@@ -99,13 +101,17 @@ export default class Chat extends React.Component {
 
     sendMessage = (e) => {
         e.preventDefault();
+        
         //console.log(this.props.name, this.state.clientMessage);
         this.socket.emit('new_message', { //to send new msg to server
             username: this.props.name,
             content: this.state.clientMessage,
         }, (response) => {
-            this.state.messages.push(response.data.newMessage);
-            this.setState({ messages: this.state.messages, clientMessage: '' })
+            if (response.data.id === this.props.match.params.id) { //??????? how to send channel id 
+                this.state.messages.channelMessages.push(response.data.newMessage);
+                this.setState({ messages: this.state.messages, clientMessage: '' })
+            }
+
         });
         this.setState({ clientMessage: '' });
     }
@@ -115,8 +121,6 @@ export default class Chat extends React.Component {
     }
 
     render() {
-        console.log('CHANNEL', this.state.channelName);
-        console.log('CHANNELS', this.state.channels);
 
         return (
             <div style={{ width: '100vw', position: "relative" }}>
