@@ -7,11 +7,12 @@ export default class Chat extends React.Component {
         super(props);
 
         this.state = {
-            channelID: '',
-            channelMessages: [],
+
+            activeChannelId: '', //sends to backend with the new msg
+            channelMessages: [], //to render the messages to a spec channel
             channelName: '', //to create a new channel
-            //channels: [],
-            clientMessage: '',
+            channels: [],
+            clientMessage: '',//to sense the input for the msg
             loggedIn: false,
             messages: [], //channels from json file
         };
@@ -22,20 +23,14 @@ export default class Chat extends React.Component {
     componentDidMount() {
         this.socket = io('localhost:3000');
 
-        //to GET all the messages from server - working
         this.socket.on('messages', data => {
             console.log('REACT, GOT DATA', data);
-            this.setState({ messages: data }); //here comes all the channels from the json!
+            this.setState({ messages: data }); //here come the channels!
         });
 
-        //to GET the sended new_message - working 
-        //-----------------------TO FIX THIS------------------------- how to save it to the sepcific channel, how to send the channel ID to the server?
         this.socket.on('new_message', data => {
-            console.log('REACT, GOT NEW MSG', data); //got: Object: content, id, username
-            //send it to the channels ID, which is on server side...
-            if (this.state.channelID) {
-                this.setState({ channelMessages: [...this.state.channelMessages, data] });
-            }
+            console.log('REACT, GOT NEW MSG', data); 
+            this.setState({ channelMessages: [...this.state.channelMessages, data] });
         });
 
     }
@@ -48,13 +43,13 @@ export default class Chat extends React.Component {
         this.setState({ channelName: e.target.value });
     }
 
-    handleChannelRoute = (e, id) => {
-        //e.preventDefault();
+    handleChannelRoute = (e, id) => { //event as argument needed!
+        e.preventDefault();
         axios.get('/' + id)
             .then(response => {
                 console.log('Channel onclick ', response);
                 this.setState({ channelMessages: response.data.channelMessages });
-                this.setState({ channelID: id });
+                this.setState({ activeChannelId: response.data.id });
             })
             .catch(err => {
                 console.log('Error by handeling channelMessages', err);
@@ -66,8 +61,7 @@ export default class Chat extends React.Component {
         axios.post('/', { channelName: this.state.channelName })//working
             .then(res => {
                 console.log('RESPONSE POSTING CHANNEL', res);
-                //this.setState({ channels: [...this.state.channels, this.state.channelName] });
-                this.setState({ messages: [...this.state.messages, this.state.channelName] });
+                this.setState({ channels: [...this.state.channels, this.state.channelName] });
             })
     }
 
@@ -84,7 +78,6 @@ export default class Chat extends React.Component {
                     key={id}
                     id={id}
                     onClick={(e, id) => { this.handleChannelRoute(e, channel.id) }}
-                    //messages={channelMessages}
                 >
                     {channelName}
                 </li>
@@ -95,16 +88,15 @@ export default class Chat extends React.Component {
     sendMessage = (e) => {
         e.preventDefault();
 
-        //console.log(this.props.name, this.state.clientMessage);
-        this.socket.emit('new_message', { //to send new msg to server
+        this.socket.emit('new_message', {
             username: this.props.name,
             content: this.state.clientMessage,
+            id: this.state.activeChannelId,
         }, (response) => {
-            if (response.data.id === this.props.match.params.id) { //??????? how to send channel id 
+            if (response.data.id === this.props.match.params.id) {
                 this.state.messages.channelMessages.push(response.data.newMessage);
                 this.setState({ messages: this.state.messages, clientMessage: '' })
             }
-
         });
         this.setState({ clientMessage: '' });
     }
@@ -114,22 +106,30 @@ export default class Chat extends React.Component {
     }
 
     render() {
+
         return (
             <div style={{ width: '100vw', position: "relative" }}>
 
                 <aside style={{ width: '30vw', display: 'flex', flexDirection: 'column', margin: '1%' }}>
+
+                    <button onClick={this.toLogOut} style={{ width: '50px' }}
+                        className='logout-button'>Log Out
+                    </button>
+
                     <label htmlFor="channel" >Create a new channel here</label>
                     <input
                         type="text"
                         onChange={this.getChannelName}
                         value={this.state.channelName}
                         name="channelName" id="channelName"
-                        style={{ width: '150px' }} />
+                        style={{ width: '150px' }}
+                    />
                     <input
                         type="submit"
                         onClick={this.handleNewChannel}
                         value="Create"
-                        style={{ width: '70px' }} />
+                        style={{ width: '70px' }}
+                    />
 
                     <h3>Channels</h3>
                     <ul>
@@ -137,35 +137,32 @@ export default class Chat extends React.Component {
                     </ul>
                 </aside>
 
-                <section style={{ width: '55vw', position: 'absolute', left: '300px' }}>
-                    <h3>Hello {this.props.name}, welcome to Chat Channels</h3>
-                    {(!this.state.channelID) ? <p>Click on a channel to continue!</p> : null}
+                <section style={{ width: '55vw', position: 'absolute', left: '300px', top: '10px' }}>
+                    <h3>Hello {this.props.name}, welcome to Chat Channels,</h3>
 
-                    <button onClick={this.toLogOut}
-                        className='logout-button'>Log Out
-                    </button>
+                    {!this.state.activeChannelId ? <p>Click on a channel on the left to continue.</p> :
+                        <div>
+                            {this.state.channelMessages.map(x => (
+                                <div key={x.msg_id} className='chat-messages'>
+                                    <span className='chat-users' id={x.msg_id}><b>{x.username} </b></span>
+                                    <span className='chat-text'> {x.content}</span>
+                                </div>
+                            ))}
 
-                    {this.state.channelID ? <>
-                        {this.state.channelMessages.map(x => (
-                            <div key={x.id} className='chat-messages'>
-                                <span className='chat-users' id={x.id}><b>{x.username} </b></span>
-                                <span className='chat-text'> {x.content}</span>
-                            </div>
-                        ))}
+                            <form type='submit' onSubmit={this.sendMessage}>
+                                <textarea
+                                    /*onKeyPress={event => event.key === 'Enter' ? this.sendMessage() : null} */
+                                    onChange={this.onChange}
+                                    value={this.state.clientMessage}
+                                    rows='4' cols='28'
+                                    placeholder='Type in Your Message Here'>
+                                </textarea>
 
-                        <form type='submit' onSubmit={this.sendMessage}>
-                            <textarea
-                                onChange={this.onChange} /*onKeyPress={event => event.key === 'Enter' ? this.sendMessage() : null} */
-                                value={this.state.clientMessage}
-                                rows='4' cols='28'
-                                placeholder='Type in Your Message Here'>
-                            </textarea>
-
-                            <button onClick={this.sendMessage} type='submit'
-                                className='send-button'>Send
-                        </button>
-                        </form>
-                    </> : null}
+                                <button onClick={this.sendMessage} 
+                                    className='send-button'>Send
+                                </button>
+                            </form>
+                        </div>}
                 </section>
             </div>
         )
