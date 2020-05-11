@@ -11,7 +11,6 @@ export default class Chat extends React.Component {
             activeChannelId: '', //sends to backend with the new msg
             channelMessages: [], //to render the messages to a spec channel
             channelName: '', //to create a new channel
-            channels: [],
             clientMessage: '',//to sense the input for the msg
             loggedIn: false,
             messages: [], //channels from json file
@@ -43,7 +42,7 @@ export default class Chat extends React.Component {
         this.setState({ channelName: e.target.value });
     }
 
-    handleChannelRoute = (e, id) => { //event as argument needed!
+    handleChannelRoute = (e, id) => { 
         e.preventDefault();
         axios.get('/' + id)
             .then(response => {
@@ -61,7 +60,7 @@ export default class Chat extends React.Component {
         axios.post('/', { channelName: this.state.channelName })//working
             .then(res => {
                 console.log('RESPONSE POSTING CHANNEL', res);
-                this.setState({ channels: [...this.state.channels, this.state.channelName] });
+                this.setState({ messages: [...this.state.messages, res.data.newChannel] });
             })
     }
 
@@ -108,9 +107,9 @@ export default class Chat extends React.Component {
     render() {
 
         return (
-            <div style={{ width: '100vw', position: "relative" }}>
+            <div style={{ width: '100vw', position: 'relative' }}>
 
-                <aside style={{ width: '30vw', display: 'flex', flexDirection: 'column', margin: '1%' }}>
+                <aside style={{ width: '30vw', position:'absolute', display: 'flex', flexDirection: 'column', margin: '1%' }}>
 
                     <button onClick={this.toLogOut} style={{ width: '50px' }}
                         className='logout-button'>Log Out
