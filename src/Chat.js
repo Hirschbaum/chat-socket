@@ -7,14 +7,13 @@ export default class Chat extends React.Component {
         super(props);
 
         this.state = {
-
+            channelID: '',
             channelMessages: [],
-            channelName: '',
-            channels: [],
+            channelName: '', //to create a new channel
+            //channels: [],
             clientMessage: '',
             loggedIn: false,
             messages: [], //channels from json file
-            chatData: [], //not working wit GET, GET messages via socket, see above
         };
 
         this.socket = null;
@@ -23,30 +22,22 @@ export default class Chat extends React.Component {
     componentDidMount() {
         this.socket = io('localhost:3000');
 
-        //to GET all the messages from server - ?! to a specific channel
+        //to GET all the messages from server - working
         this.socket.on('messages', data => {
             console.log('REACT, GOT DATA', data);
-            this.setState({ messages: data }); //here comes the channels!
+            this.setState({ messages: data }); //here comes all the channels from the json!
         });
 
-        //to GET the sended new_message - working - ?! how to send to a specific channel
-        //-----------------------TO FIX THIS-------------------------
+        //to GET the sended new_message - working 
+        //-----------------------TO FIX THIS------------------------- how to save it to the sepcific channel, how to send the channel ID to the server?
         this.socket.on('new_message', data => {
             console.log('REACT, GOT NEW MSG', data); //got: Object: content, id, username
             //send it to the channels ID, which is on server side...
-            this.setState({ channelMessages: [...this.state.channelMessages, data] });
+            if (this.state.channelID) {
+                this.setState({ channelMessages: [...this.state.channelMessages, data] });
+            }
         });
 
-        /*to GET all the chatdata from the server, data comes through SOCKET!
-        axios.get('/')
-            .then(response => {
-                this.setState({ chatData: response.data });
-                console.log('CHATDATA by GET', this.state.chatData);
-            })
-            .catch(err => {
-                console.log('Error by reciving all the chat data from server', err);
-            });
-            */
     }
 
     componentWillUnmount() {
@@ -62,7 +53,8 @@ export default class Chat extends React.Component {
         axios.get('/' + id)
             .then(response => {
                 console.log('Channel onclick ', response);
-                this.setState({ channelMessages: response.data.channelMessages })
+                this.setState({ channelMessages: response.data.channelMessages });
+                this.setState({ channelID: id });
             })
             .catch(err => {
                 console.log('Error by handeling channelMessages', err);
@@ -74,7 +66,8 @@ export default class Chat extends React.Component {
         axios.post('/', { channelName: this.state.channelName })//working
             .then(res => {
                 console.log('RESPONSE POSTING CHANNEL', res);
-                this.setState({ channels: [...this.state.channels, this.state.channelName] });
+                //this.setState({ channels: [...this.state.channels, this.state.channelName] });
+                this.setState({ messages: [...this.state.messages, this.state.channelName] });
             })
     }
 
@@ -91,7 +84,7 @@ export default class Chat extends React.Component {
                     key={id}
                     id={id}
                     onClick={(e, id) => { this.handleChannelRoute(e, channel.id) }}
-                //channelMessages={channelMessages}
+                    //messages={channelMessages}
                 >
                     {channelName}
                 </li>
@@ -101,7 +94,7 @@ export default class Chat extends React.Component {
 
     sendMessage = (e) => {
         e.preventDefault();
-        
+
         //console.log(this.props.name, this.state.clientMessage);
         this.socket.emit('new_message', { //to send new msg to server
             username: this.props.name,
@@ -121,12 +114,10 @@ export default class Chat extends React.Component {
     }
 
     render() {
-
         return (
             <div style={{ width: '100vw', position: "relative" }}>
 
                 <aside style={{ width: '30vw', display: 'flex', flexDirection: 'column', margin: '1%' }}>
-                    {/* <form action="" method="post">*/}
                     <label htmlFor="channel" >Create a new channel here</label>
                     <input
                         type="text"
@@ -139,7 +130,6 @@ export default class Chat extends React.Component {
                         onClick={this.handleNewChannel}
                         value="Create"
                         style={{ width: '70px' }} />
-                    {/*</form>*/}
 
                     <h3>Channels</h3>
                     <ul>
@@ -149,30 +139,33 @@ export default class Chat extends React.Component {
 
                 <section style={{ width: '55vw', position: 'absolute', left: '300px' }}>
                     <h3>Hello {this.props.name}, welcome to Chat Channels</h3>
+                    {(!this.state.channelID) ? <p>Click on a channel to continue!</p> : null}
+
                     <button onClick={this.toLogOut}
-                        className='logout-button'>Log Out</button>
+                        className='logout-button'>Log Out
+                    </button>
 
-                    {this.state.channelMessages.map(x => (
-                        <div key={x.id} className='chat-messages'>
-                            <span className='chat-users' id={x.id}><b>{x.username} </b></span>
-                            <span className='chat-text'> {x.content}</span>
-                        </div>
-                    ))}
+                    {this.state.channelID ? <>
+                        {this.state.channelMessages.map(x => (
+                            <div key={x.id} className='chat-messages'>
+                                <span className='chat-users' id={x.id}><b>{x.username} </b></span>
+                                <span className='chat-text'> {x.content}</span>
+                            </div>
+                        ))}
 
+                        <form type='submit' onSubmit={this.sendMessage}>
+                            <textarea
+                                onChange={this.onChange} /*onKeyPress={event => event.key === 'Enter' ? this.sendMessage() : null} */
+                                value={this.state.clientMessage}
+                                rows='4' cols='28'
+                                placeholder='Type in Your Message Here'>
+                            </textarea>
 
-                    <form type='submit' onSubmit={this.sendMessage}>
-                        <textarea
-                            /*onKeyPress={event => event.key === 'Enter' ? this.sendMessage() : null} */
-                            onChange={this.onChange}
-                            value={this.state.clientMessage}
-                            rows='4' cols='28'
-                            placeholder='Type in Your Message Here'>
-                        </textarea>
-
-                        <button onClick={this.sendMessage} type='submit'
-                            className='send-button'>Send
+                            <button onClick={this.sendMessage} type='submit'
+                                className='send-button'>Send
                         </button>
-                    </form>
+                        </form>
+                    </> : null}
                 </section>
             </div>
         )
