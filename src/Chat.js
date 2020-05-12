@@ -28,7 +28,7 @@ export default class Chat extends React.Component {
         });
 
         this.socket.on('new_message', data => {
-            console.log('REACT, GOT NEW MSG', data); 
+            console.log('REACT, GOT NEW MSG', data);
             this.setState({ channelMessages: [...this.state.channelMessages, data] });
         });
 
@@ -42,8 +42,8 @@ export default class Chat extends React.Component {
         this.setState({ channelName: e.target.value });
     }
 
-    handleChannelRoute = (e, id) => { 
-        e.preventDefault();
+    handleChannelRoute = (e, id) => {
+        //e.preventDefault();
         axios.get('/' + id)
             .then(response => {
                 console.log('Channel onclick ', response);
@@ -57,7 +57,7 @@ export default class Chat extends React.Component {
 
     handleNewChannel = (e) => {
         e.preventDefault();
-        axios.post('/', { channelName: this.state.channelName })//working
+        axios.post('/', { channelName: this.state.channelName })
             .then(res => {
                 console.log('RESPONSE POSTING CHANNEL', res);
                 this.setState({ messages: [...this.state.messages, res.data.newChannel] });
@@ -69,6 +69,20 @@ export default class Chat extends React.Component {
         this.setState({ clientMessage: value });
     }
 
+    removeChannel = (id) => {
+        //e.preventDefault();
+        //e.stopPropagation();
+        axios.delete('/' + id)
+            .then(response => {
+                console.log('Channel onclick on X', response);
+                this.setState({messages: this.state.messages.filter(x => id !== x.id)});//this.setState({ channelMessages: response.data.channelMessages });
+                //this.setState({activeChannelId: ''})
+            })
+            .catch(err => {
+                console.log('Error by removing channel', err);
+            })
+    }
+
     renderChannels = () => {
         return this.state.messages.map((channel) => {
             const { channelName, id } = channel;
@@ -76,9 +90,20 @@ export default class Chat extends React.Component {
                 <li
                     key={id}
                     id={id}
-                    onClick={(e, id) => { this.handleChannelRoute(e, channel.id) }}
+                    
                 >
-                    {channelName}
+                    <span
+                        style={{ padding: '1%' }}
+                        onClick={() => { this.handleChannelRoute(channel.id) }}
+                    >
+                        {channelName}
+                    </span>
+                    <span
+                        onClick={this.removeChannel(channel.id)}
+                        style={{ marginLeft: '15px', border: '1px solid black', padding: '1%', width: '30px' }}
+                    >
+                        Delete
+                    </span>
                 </li>
             )
         })
@@ -109,7 +134,7 @@ export default class Chat extends React.Component {
         return (
             <div style={{ width: '100vw', position: 'relative' }}>
 
-                <aside style={{ width: '30vw', position:'absolute', display: 'flex', flexDirection: 'column', margin: '1%' }}>
+                <aside style={{ width: '30vw', position: 'absolute', display: 'flex', flexDirection: 'column', margin: '1%' }}>
 
                     <button onClick={this.toLogOut} style={{ width: '50px' }}
                         className='logout-button'>Log Out
@@ -131,7 +156,7 @@ export default class Chat extends React.Component {
                     />
 
                     <h3>Channels</h3>
-                    <ul>
+                    <ul style={{ cursor: 'cursor-pointer', listStyleType: 'none' }}>
                         {this.renderChannels()}
                     </ul>
                 </aside>
@@ -157,7 +182,7 @@ export default class Chat extends React.Component {
                                     placeholder='Type in Your Message Here'>
                                 </textarea>
 
-                                <button onClick={this.sendMessage} 
+                                <button onClick={this.sendMessage}
                                     className='send-button'>Send
                                 </button>
                             </form>
