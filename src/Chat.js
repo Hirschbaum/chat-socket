@@ -43,7 +43,7 @@ export default class Chat extends React.Component {
     }
 
     handleChannelRoute = (e, id) => {
-        //e.preventDefault();
+        e.preventDefault();
         axios.get('/' + id)
             .then(response => {
                 console.log('Channel onclick ', response);
@@ -57,7 +57,7 @@ export default class Chat extends React.Component {
 
     handleNewChannel = (e) => {
         e.preventDefault();
-        axios.post('/', { channelName: this.state.channelName })
+        axios.post('/', { channelName: this.state.channelName })//working
             .then(res => {
                 console.log('RESPONSE POSTING CHANNEL', res);
                 this.setState({ messages: [...this.state.messages, res.data.newChannel] });
@@ -69,18 +69,30 @@ export default class Chat extends React.Component {
         this.setState({ clientMessage: value });
     }
 
-    removeChannel = (id) => {
-        //e.preventDefault();
-        //e.stopPropagation();
-        axios.delete('/' + id)
+    /*reloadChannels = () => {
+        axios.get('/')
             .then(response => {
-                console.log('Channel onclick on X', response);
-                this.setState({messages: this.state.messages.filter(x => id !== x.id)});//this.setState({ channelMessages: response.data.channelMessages });
-                //this.setState({activeChannelId: ''})
+                let data = response.data;
+                this.setState({messages: data});
+            })
+            .catch(error => {
+                console.log('Error by reloading channels', error);
+            })
+    }*/
+
+    removeChannel = (id) => {
+        //e.stopPropagation(); 
+        axios.delete('/' + id)
+            .then((response)=> {
+                console.log('Channel on delete', response); //not logging, just the other onclick
+                this.setState({ messages: this.state.messages.filter(x => response.data.data.id !== x.id) });
+                //this.setState({ messages: this.state.messages.filter(x => id !== x.id) });//
+                //this.setState({activeChannelId: ''});
             })
             .catch(err => {
                 console.log('Error by removing channel', err);
             })
+    
     }
 
     renderChannels = () => {
@@ -90,20 +102,10 @@ export default class Chat extends React.Component {
                 <li
                     key={id}
                     id={id}
-                    
+                    onClick={(e, id) => { this.handleChannelRoute(e, channel.id) }}
                 >
-                    <span
-                        style={{ padding: '1%' }}
-                        onClick={() => { this.handleChannelRoute(channel.id) }}
-                    >
-                        {channelName}
-                    </span>
-                    <span
-                        onClick={this.removeChannel(channel.id)}
-                        style={{ marginLeft: '15px', border: '1px solid black', padding: '1%', width: '30px' }}
-                    >
-                        Delete
-                    </span>
+                    <span>{channelName}</span>
+                    <span><button onClick={() => { this.removeChannel(channel.id) }}>Delete</button></span>
                 </li>
             )
         })
@@ -156,7 +158,7 @@ export default class Chat extends React.Component {
                     />
 
                     <h3>Channels</h3>
-                    <ul style={{ cursor: 'cursor-pointer', listStyleType: 'none' }}>
+                    <ul>
                         {this.renderChannels()}
                     </ul>
                 </aside>
@@ -175,7 +177,6 @@ export default class Chat extends React.Component {
 
                             <form type='submit' onSubmit={this.sendMessage}>
                                 <textarea
-                                    /*onKeyPress={event => event.key === 'Enter' ? this.sendMessage() : null} */
                                     onChange={this.onChange}
                                     value={this.state.clientMessage}
                                     rows='4' cols='28'
