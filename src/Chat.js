@@ -9,6 +9,7 @@ export default class Chat extends React.Component {
         this.state = {
 
             activeChannelId: '', //sends to backend with the new msg
+            activeChannelName: '',
             channelMessages: [], //to render the messages to a spec channel
             channelName: '', //to create a new channel
             clientMessage: '',//to sense the input for the msg
@@ -34,9 +35,9 @@ export default class Chat extends React.Component {
 
     }
 
-    componentWillUnmount() {
+   /* componentWillUnmount() {
         this.socket.off() //if it is empty, then it takes away all the eventlisteners
-    }
+    }*/
 
     getChannelName = (e) => {
         this.setState({ channelName: e.target.value });
@@ -49,6 +50,7 @@ export default class Chat extends React.Component {
                 console.log('Channel onclick ', response);
                 this.setState({ channelMessages: response.data.channelMessages });
                 this.setState({ activeChannelId: response.data.id });
+                this.setState({ activeChannelName: response.data.channelName });
             })
             .catch(err => {
                 console.log('Error by handeling channelMessages', err);
@@ -69,7 +71,7 @@ export default class Chat extends React.Component {
         this.setState({ clientMessage: value });
     }
 
-    /*reloadChannels = () => {
+    /*reloadChannels = () => {//cant perform a react state update on an unmounted component
         axios.get('/')
             .then(response => {
                 let data = response.data;
@@ -80,19 +82,18 @@ export default class Chat extends React.Component {
             })
     }*/
 
-    removeChannel = (id) => {
+    removeChannel = (id) => { 
         //e.stopPropagation(); 
+        console.log('ID to remove', id)
         axios.delete('/' + id)
-            .then((response)=> {
-                console.log('Channel on delete', response); //not logging, just the other onclick
-                this.setState({ messages: this.state.messages.filter(x => response.data.data.id !== x.id) });
-                //this.setState({ messages: this.state.messages.filter(x => id !== x.id) });//
-                //this.setState({activeChannelId: ''});
+            .then((response) => {
+                console.log('Channel on delete', response); 
+                this.setState({ messages: this.state.messages.filter(x => id !== x.id) });
+                this.setState({activeChannelId: ''});
             })
             .catch(err => {
-                console.log('Error by removing channel', err);
+                console.log('Error by removing channel', err); //GOT THIS! YEAY!
             })
-    
     }
 
     renderChannels = () => {
@@ -102,10 +103,10 @@ export default class Chat extends React.Component {
                 <li
                     key={id}
                     id={id}
-                    onClick={(e, id) => { this.handleChannelRoute(e, channel.id) }}
+                    onClick={(e) => { this.handleChannelRoute(e, id) }}
                 >
                     <span>{channelName}</span>
-                    <span><button onClick={() => { this.removeChannel(channel.id) }}>Delete</button></span>
+                    <span id={id}><button onClick={() => { this.removeChannel(id) }}>Delete</button></span>
                 </li>
             )
         })
@@ -167,7 +168,9 @@ export default class Chat extends React.Component {
                     <h3>Hello {this.props.name}, welcome to Chat Channels,</h3>
 
                     {!this.state.activeChannelId ? <p>Click on a channel on the left to continue.</p> :
+                        
                         <div>
+                            <h3>#{this.state.activeChannelName}</h3>
                             {this.state.channelMessages.map(x => (
                                 <div key={x.msg_id} className='chat-messages'>
                                     <span className='chat-users' id={x.msg_id}><b>{x.username} </b></span>
