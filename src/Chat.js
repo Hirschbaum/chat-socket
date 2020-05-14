@@ -35,7 +35,7 @@ export default class Chat extends React.Component {
 
     }
 
-   /* componentWillUnmount() {
+   /*componentWillUnmount() {
         this.socket.off() //if it is empty, then it takes away all the eventlisteners
     }*/
 
@@ -74,30 +74,18 @@ export default class Chat extends React.Component {
         this.setState({ clientMessage: value });
     }
 
-    /*reloadChannels = () => {//cant perform a react state update on an unmounted component
-        axios.get('/')
-            .then(response => {
-                let data = response.data;
-                this.setState({messages: data}); 
-            })
-            .catch(error => {
-                console.log('Error by reloading channels', error);
-            })
-    }*/
-
     removeChannel = (e, id) => { 
         e.stopPropagation(); 
         console.log('ID to remove', id)
         axios.delete('/' + id)
             .then((response) => {
-                console.log('Channel on delete', response); //got this
+                console.log('Channel on delete', response);
                 this.setState({ messages: this.state.messages.filter(x => id !== x.id) });
                 this.setState({activeChannelId: ''});
             })
             .catch(err => {
                 console.log('Error by removing channel', err); 
             })
-            //this.reloadChannels();
     }
 
     renderChannels = () => {
@@ -178,7 +166,7 @@ export default class Chat extends React.Component {
                             {this.state.channelMessages.map(x => (
                                 <div key={x.msg_id} className='chat-messages'>
                                     <span className='chat-users' id={x.msg_id}><b>{x.username} </b></span>
-                                    <span className='chat-text'> {x.content}</span>
+                                    <span className='chat-text'> {x.content} </span>
                                 </div>
                             ))}
 
