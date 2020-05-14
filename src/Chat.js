@@ -1,6 +1,7 @@
 import React from 'react';
 import io from 'socket.io-client';
 import axios from 'axios';
+import { emojify } from 'react-emojione';
 
 export default class Chat extends React.Component {
     constructor(props) {
@@ -35,9 +36,9 @@ export default class Chat extends React.Component {
 
     }
 
-   /*componentWillUnmount() {
-        this.socket.off() //if it is empty, then it takes away all the eventlisteners
-    }*/
+    /*componentWillUnmount() {
+         this.socket.off() //if it is empty, then it takes away all the eventlisteners
+     }*/
 
     getChannelName = (e) => {
         this.setState({ channelName: e.target.value });
@@ -74,17 +75,17 @@ export default class Chat extends React.Component {
         this.setState({ clientMessage: value });
     }
 
-    removeChannel = (e, id) => { 
-        e.stopPropagation(); 
+    removeChannel = (e, id) => {
+        e.stopPropagation();
         console.log('ID to remove', id)
         axios.delete('/' + id)
             .then((response) => {
                 console.log('Channel on delete', response);
                 this.setState({ messages: this.state.messages.filter(x => id !== x.id) });
-                this.setState({activeChannelId: ''});
+                this.setState({ activeChannelId: '' });
             })
             .catch(err => {
-                console.log('Error by removing channel', err); 
+                console.log('Error by removing channel', err);
             })
     }
 
@@ -96,9 +97,16 @@ export default class Chat extends React.Component {
                     key={id}
                     id={id}
                     onClick={(e) => { this.handleChannelRoute(e, id) }}
+                    style={{ display: 'block', paddingRight: '1%' }}
                 >
-                    <span>{channelName}</span>
-                    <span id={id}><button onClick={(e) => { this.removeChannel(e,id) }}>Delete</button></span>
+                    <span>#{channelName}</span>
+                    <span id={id} >
+                        <button onClick={(e) => { this.removeChannel(e, id) }} className='button__delete'>
+                            <span className="material-icons">
+                                delete_forever
+                            </span>
+                        </button>
+                    </span>
                 </li>
             )
         })
@@ -127,63 +135,83 @@ export default class Chat extends React.Component {
     render() {
 
         return (
-            <div style={{ width: '100vw', position: 'relative' }}>
+            <div style={{ width: '100vw', position: 'relative', display: 'flex' }}>
 
-                <aside style={{ width: '30vw', position: 'absolute', display: 'flex', flexDirection: 'column', margin: '1%' }}>
+                <aside style={{ width: '40vw', position: 'absolute', display: 'flex', flexDirection: 'column' }}>
 
-                    <button onClick={this.toLogOut} style={{ width: '50px' }}
-                        className='logout-button'>Log Out
+                    <button onClick={this.toLogOut}
+                        className='logout-button'>
+                        <span className="material-icons">
+                            exit_to_app
+                        </span>
                     </button>
 
-                    <label htmlFor="channel" >Create a new channel here</label>
-                    <input
-                        type="text"
-                        onChange={this.getChannelName}
-                        value={this.state.channelName}
-                        name="channelName" id="channelName"
-                        style={{ width: '150px' }}
-                    />
-                    <input
-                        type="submit"
-                        onClick={this.handleNewChannel}
-                        value="Create"
-                        style={{ width: '70px' }}
-                    />
+                    <div className="create__channel">
+                        <div>
+                            <input
+                                type="text"
+                                onChange={this.getChannelName}
+                                value={this.state.channelName}
+                                name="channelName" id="channelName"
+                                placeholder="Create channel"
+                            />
+                        </div>
 
-                    <h3>Channels</h3>
-                    <ul>
-                        {this.renderChannels()}
-                    </ul>
+                        
+                            <button
+                                onClick={this.handleNewChannel}
+                                className='add__button'
+                            >
+                                <span className="material-icons">
+                                    add
+                                </span>
+                            </button>
+                       
+                    </div>
+
+                        <div className="channels__list" >
+                            <h3>Channels</h3>
+                            <ul style={{ listStyleType: 'none', margin: '0', padding: '0' }}>
+                                {this.renderChannels()}
+                            </ul>
+                        </div>
                 </aside>
 
-                <section style={{ width: '55vw', position: 'absolute', left: '300px', top: '10px' }}>
-                    <h3>Hello {this.props.name}, welcome to Chat Channels,</h3>
+                    <section style={{ width: '55vw', position: 'absolute', left: '300px', top: '10px' }}>
+                        <h3>Hello {this.props.name}, welcome to Chat Channels,</h3>
 
-                    {!this.state.activeChannelId ? <p>Click on a channel on the left to continue.</p> :
-                        
-                        <div>
-                            <h3>#{this.state.activeChannelName}</h3>
-                            {this.state.channelMessages.map(x => (
-                                <div key={x.msg_id} className='chat-messages'>
-                                    <span className='chat-users' id={x.msg_id}><b>{x.username} </b></span>
-                                    <span className='chat-text'> {x.content} </span>
-                                </div>
-                            ))}
+                        {!this.state.activeChannelId ? <p>Click on a channel on the left to continue.</p> :
 
-                            <form type='submit' onSubmit={this.sendMessage}>
-                                <textarea
-                                    onChange={this.onChange}
-                                    value={this.state.clientMessage}
-                                    rows='4' cols='28'
-                                    placeholder='Type in Your Message Here'>
-                                </textarea>
+                            <div>
+                                <h3>#{this.state.activeChannelName}</h3>
+                                <br />
+                                {this.state.channelMessages.map(x => (
+                                    <div key={x.msg_id} className='chat-messages'>
+                                        <span className='chat-users' id={x.msg_id}><b>{x.username} </b></span>
+                                        <span className='chat-text'>{emojify(x.content)}</span>
+                                    </div>
+                                ))}
 
-                                <button onClick={this.sendMessage}
-                                    className='send-button'>Send
-                                </button>
-                            </form>
-                        </div>}
-                </section>
+                                <hr></hr>
+
+                                <form type='submit' onSubmit={this.sendMessage}>
+                                    <textarea
+                                        onChange={this.onChange}
+                                        value={this.state.clientMessage}
+                                        rows='5' cols='100'
+                                        placeholder='Type in Your Message Here'>
+                                    </textarea>
+
+                                    <button onClick={this.sendMessage}
+                                        className='send-button'>
+                                        <span className="material-icons">
+                                            send
+                                    </span>
+                                    </button>
+                                </form>
+
+                            </div>}
+                    </section>
             </div>
         )
     }

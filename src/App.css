@@ -2,5 +2,226 @@
   text-align: center;
 }
 * {
+  font-family: 'Quicksand', sans-serif;
+}
+
+body {
+  background-color: #eee;
+  margin: 0 auto;
+}
+
+h1, h2 {
+  letter-spacing: 0.1em;
+  color: #3c40c6;
+  font-weight: 800;
+  align-self: center;
+  margin-top: 5%;
+}
+
+li:hover {
+  cursor: pointer;
+  color: 'blue';
+}
+
+button:hover {
+  cursor: ponter;
+}
+
+/*-------------LOGIN PAGE-------------------*/
+
+.login-page {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  background-color: rgb(250, 250, 249);
+  margin: 5% 10%;
+  padding: 0% 0% 50% 0%;
+  border-radius: 0.4rem;
+}
+
+input[type=text], .login-button {
+  padding: 2%;
+  border-radius: 0.4rem;
+  border: 1px solid #ddd;
+  letter-spacing: 0.1em;
+  margin: 2% 0% 1% 0%;
+}
+
+input[type=text] {
+  width: 40%;
+  align-self: center;
+}
+
+input[type=text]:focus, input[type=text]:in-range {
+  border: 1px solid #575fcf;
+  border-radius: 0%;
+}
+
+.login-button {
+  margin: 0 1%;
+  color: #fff;
+  font-weight: 800;
+  font-size: 1.05rem;
+  background-color:#575fcf;
+  width: 20%;
+  align-self: center;
+}
+
+/*-----------------CREATE CHANNELs---------------*/
+
+.create__channel {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  margin: 20px 0 0 10px;
+}
+
+.create__channel  input[type='text'] {
+  padding: 3% 0;
+  width: 180px;
+  line-height: 2rem;
+}
+
+.add__button  {
+  width: 30px;
+  padding: 1%;
+  border-radius: 0.3em;
+  line-height: 1.5em;
+  background-color: #575fcf;
+  color: #fff;
+  font-size: 1em;
+}
+
+.channels__list {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-left: 0;
+  position: absolute;
+  top: 120px;
+  left: 10px;
+}
+
+.channels__list ul {
+  width: 200px;
   text-align: left;
+}
+
+.channels__list li {
+  align-self: flex-start;
+  display: flex;
+  justify-content: space-between;
+  line-height: 2em;
+  padding: 0;
+}
+
+.button__delete {
+  background-color: none;
+  border: none;
+  line-height: 2em;
+  text-align: center;
+}
+
+.button__delete > span {
+  margin: 0 auto;
+ text-align: center;
+ font-size: 1.8em;
+ line-height: 1.8em;
+ 
+  }
+
+/*-----------------CHAT PAGE---------------*/
+section {
+  background: #fff;
+  width: 70vw;
+  height: 100vh;
+}
+
+section h3, p {
+  text-align: left;
+  margin-left: 10%;
+}
+
+.chat-page {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: flex-start;
+  background-color: rgb(250, 250, 249);
+  border-radius: 0.4rem;
+  margin: 5% 10%;
+}
+
+.logout-button, .add__button {
+  align-self: flex-start;
+  margin-left: 10px;
+  color: #fff;
+  font-weight: 800;
+  font-size: 1.05rem;
+  background-color: #575fcf;
+  width: 7%;
+  padding: 1%;
+  border-radius: 0.3rem;
+  border: 1px solid #ddd;
+  letter-spacing: 0.1em;
+} 
+
+button:hover {
+  cursor: pointer;
+  color: #fff;
+  background-color: #ef5777;
+  font-weight: 900;
+  border: 1px solid #ddd;
+}
+
+.chat-messages {
+  display: flex;
+  margin-left: 10%;
+  width: 80%;
+  padding: 0.05em;
+  margin-bottom: 2%;
+}
+
+.chat-users {
+  font-weight: 800;
+  margin-right: 7%;
+}
+
+.chat-text {
+  /*overflow-wrap: break-word;*/
+  word-break: break-all;
+  margin-right: 1%;
+} 
+
+/*---------------SEND NEW MESSAGE---------------*/
+form {
+  display: flex;
+  margin-left: 10%;
+  margin-top: 1%;
+  position: absolute;
+  bottom: 50px;
+  left: 10px;
+}
+
+textarea {
+  border-radius: 0.4rem;
+}
+
+textarea:focus {
+  border: 1px solid #575fcf;
+  border-radius: inherit;
+}
+
+.send-button, .delete__button {
+ width: 14%;
+ align-self: flex-end;
+ margin-left: 5%;
+ color: #fff;
+ background-color: #575fcf;
+ border: 1px solid #ddd;
+ border-radius: 0.3rem;
+ font-weight: 800;
+ padding: 3% 0%;
+ font-size: 1.1em;
+ letter-spacing: 0.1em;
 }
