@@ -64,6 +64,9 @@ export default class Chat extends React.Component {
                 console.log('RESPONSE POSTING CHANNEL', res);
                 this.setState({ messages: [...this.state.messages, res.data.newChannel] });
             })
+            .catch(err => {
+                console.log('Error by creating new channel', err);
+            })
     }
 
     onChange = (e) => {
@@ -75,25 +78,26 @@ export default class Chat extends React.Component {
         axios.get('/')
             .then(response => {
                 let data = response.data;
-                this.setState({messages: data});
+                this.setState({messages: data}); 
             })
             .catch(error => {
                 console.log('Error by reloading channels', error);
             })
     }*/
 
-    removeChannel = (id) => { 
-        //e.stopPropagation(); 
+    removeChannel = (e, id) => { 
+        e.stopPropagation(); 
         console.log('ID to remove', id)
         axios.delete('/' + id)
             .then((response) => {
-                console.log('Channel on delete', response); 
+                console.log('Channel on delete', response); //got this
                 this.setState({ messages: this.state.messages.filter(x => id !== x.id) });
                 this.setState({activeChannelId: ''});
             })
             .catch(err => {
-                console.log('Error by removing channel', err); //GOT THIS! YEAY!
+                console.log('Error by removing channel', err); 
             })
+            //this.reloadChannels();
     }
 
     renderChannels = () => {
@@ -106,7 +110,7 @@ export default class Chat extends React.Component {
                     onClick={(e) => { this.handleChannelRoute(e, id) }}
                 >
                     <span>{channelName}</span>
-                    <span id={id}><button onClick={() => { this.removeChannel(id) }}>Delete</button></span>
+                    <span id={id}><button onClick={(e) => { this.removeChannel(e,id) }}>Delete</button></span>
                 </li>
             )
         })
